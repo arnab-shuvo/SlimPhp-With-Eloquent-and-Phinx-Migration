@@ -1,0 +1,78 @@
+# IMPORTANT NOTES:
+# If you will execute this compose file more than one time, you need
+# to do some changes: ports, project name (in env file) and mysql volume name
+# Also, you need to wait acouple of minutes before login to phpmyadmin. If not
+# you will acquire an error #2002 - Connection refused &mdash; El servidor no está respondiendo (o el zócalo local al servidor MySQL no está configurado correctamente).
+version: '3'
+services:
+    nginx:
+        build: ./config_nginx
+        container_name: nginx
+        restart: always
+        ports:
+            # Ports: <HOST:CONTAINER>
+            # Take care not to be using the following ports for any other service
+            - 8085:80
+        volumes:
+            - ./piranha-api:/var/www/html/appdockerfile
+        depends_on:
+          - php             
+        networks:
+          - skynet
+
+    mysql:
+        image: mysql:5.7.20
+        container_name: database
+        restart: always
+        environment:
+            # Change the passwords below
+            # root (This user will be able to view database restored from schema.sql / all databases)
+            MYSQL_ROOT_PASSWORD: root
+            
+            # Create new user (This user only has access to the new database)
+            MYSQL_USER: arnab
+            MYSQL_PASSWORD: arnab
+            # Create New Database
+            MYSQL_DATABASE: piranha
+        ports:
+          - 3316:3306
+        networks:
+          - skynet
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin:4.7
+        container_name: phpmyadmin
+        ports: 
+          - 8090:80
+        #links:
+        #  - mysql 
+        environment:
+          PMA_HOST: mysql 
+        depends_on:
+          - mysql          
+        networks:
+          - skynet
+
+    php:
+        build: ./config_php
+        entrypoint: ./entrypoint.sh
+        container_name: php
+        restart: always
+        depends_on:
+          - mysql
+        expose:
+          - 9000
+        volumes:
+          - ./piranha-api:/var/www/html/app
+        networks:
+          - skynet
+
+networks:
+  #proxy:
+  #  external: true
+  skynet:
+    external: false
+    driver: "bridge"
+
+volumes:
+  mysql_slim:
