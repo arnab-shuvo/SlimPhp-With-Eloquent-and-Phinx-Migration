@@ -1,4 +1,4 @@
-# Piranha Frontend
+# Slim Php with eloquent and phinx
 
 We are using SlimPHP, a micro framework from php where we are creating the services. No thirdparty auth toolkit is used. Integrated eloquent as ORM and Phinx for migration.
 
